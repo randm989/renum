@@ -7,19 +7,27 @@ using namespace std;
 
 int main()
 {
-	vector<EMessage> Msgs = 
+	vector<FActorMessage> Msgs = 
 		{
-			EMessages::RerouteMessage{"ReroutedURL"},
-			EMessages::RerouteMessage{"Rerouted2"},
-			EMessages::SuccessMessage{},
-			EMessages::MultiMessage{"google?", 42560}
+			FActorMessage::Death{},
+			FActorMessage::Damage{32},
+			FActorMessage::Stunned{45.5},
+			FActorMessage::ReceiveMoney{"admin", 10000}
 		};
 
 	for (const auto& Msg : Msgs)
-		Match(Msg,
-		[](EMessages::SuccessMessage) { cout << "Success!" << endl; },
-		[](EMessages::RerouteMessage msg) { cout << "Reroute: " << msg.URL << endl; },
-		[](EMessages::MultiMessage msg) { cout << "MultiMessage: " << msg.integer << " " << msg.URL << endl; });
+		SmartEnum::Match(Msg,
+		[](FActorMessage::Death) { cout << "Death!" << endl; },
+		[](FActorMessage::Damage msg) { cout << "Damage: " << msg.amount << endl; },
+		[](FActorMessage::Stunned msg) { cout << "Stunned: " << msg.duration << endl; },
+		[](FActorMessage::ReceiveMoney msg) { cout << "ReceiveMoney: " << msg.sourceName << " " << msg.amount << endl; });
+
+	
+	SmartEnum::Match(FWebMessage{FWebMessage::Reroute{"www.kagi.com"}},
+		[](FWebMessage::Success) { cout << "Success" << endl; },
+		[](FWebMessage::Failure msg) { cout << "Failure: " << msg.reason << endl; },
+		[](FWebMessage::Retry msg) {cout << "Retry count: " << msg.attempts << endl; },
+		[](FWebMessage::Reroute msg) { cout << "Reroute to: " << msg.URL << endl; });
 
 	std::cout << "Hello world" << std::endl;
 }
