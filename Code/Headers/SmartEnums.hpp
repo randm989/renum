@@ -7,43 +7,67 @@
 #define CPP20_OR_LATER
 #endif
 
-struct FActorMessage
-{
-public:
-	struct Death {};
-	struct Damage {int amount;};
-	struct Stunned {float duration;};
-	struct ReceiveMoney {std::string sourceName; int amount;};
-
-	using Variant = std::variant<Death, Damage, Stunned, ReceiveMoney>;
-	operator Variant() const { return _variant; }
-
-	template <typename T>
-	FActorMessage(T&& init) : _variant(init) {} 
-private:
-	Variant _variant;
+// Macro for 1 parameter
+#define DECLARE_SMART_ENUM_OneParam(EnumName, FirstOptionName, FirstOptionBody) \
+struct EnumName { \
+    struct FirstOptionName FirstOptionBody; \
+    using VariantType = std::variant<FirstOptionName>; \
+    template<typename T> EnumName(T&& v) : Variant(std::move(v)) {} \
+    operator VariantType() const { return Variant; } \
+private: \
+    VariantType Variant; \
 };
 
-struct FWebMessage
-{
-public:
-	struct Success {};
-	struct Failure {std::string reason;};
-	struct Reroute {std::string URL;};
-	struct Retry {int attempts;};
-
-	using Variant = std::variant<Success, Failure, Reroute, Retry>;
-	operator Variant() const { return _variant; }
-
-	template <typename T>
-		requires std::is_same_v<T, Success> ||
-				std::is_same_v<T, Failure> ||
-				std::is_same_v<T, Reroute> ||
-				std::is_same_v<T, Retry>
-	FWebMessage(T&& init) : _variant(std::forward<T>(init)) {} 
-private:
-	Variant _variant;
+// Macro for 2 parameters
+#define DECLARE_SMART_ENUM_TwoParams(EnumName, FirstOptionName, FirstOptionBody, SecondOptionName, SecondOptionBody) \
+struct EnumName { \
+    struct FirstOptionName FirstOptionBody; \
+    struct SecondOptionName SecondOptionBody; \
+    using VariantType = std::variant<FirstOptionName, SecondOptionName>; \
+    template<typename T> EnumName(T&& v) : Variant(std::move(v)) {} \
+    operator VariantType() const { return Variant; } \
+private: \
+    VariantType Variant; \
 };
+
+// Macro for 3 parameters
+#define DECLARE_SMART_ENUM_ThreeParams(EnumName, FirstOptionName, FirstOptionBody, SecondOptionName, SecondOptionBody, ThirdOptionName, ThirdOptionBody) \
+struct EnumName { \
+    struct FirstOptionName FirstOptionBody; \
+    struct SecondOptionName SecondOptionBody; \
+    struct ThirdOptionName ThirdOptionBody; \
+    using VariantType = std::variant<FirstOptionName, SecondOptionName, ThirdOptionName>; \
+    template<typename T> EnumName(T&& v) : Variant(std::move(v)) {} \
+    operator VariantType() const { return Variant; } \
+private: \
+    VariantType Variant; \
+};
+
+// Macro for 4 parameters
+#define DECLARE_SMART_ENUM_FourParams(EnumName, FirstOptionName, FirstOptionBody, SecondOptionName, SecondOptionBody, ThirdOptionName, ThirdOptionBody, FourthOptionName, FourthOptionBody) \
+struct EnumName { \
+    struct FirstOptionName FirstOptionBody; \
+    struct SecondOptionName SecondOptionBody; \
+    struct ThirdOptionName ThirdOptionBody; \
+    struct FourthOptionName FourthOptionBody; \
+    using VariantType = std::variant<FirstOptionName, SecondOptionName, ThirdOptionName, FourthOptionName>; \
+    template <typename T, typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, EnumName>>> \
+	EnumName(T&& v) : Variant(std::forward<T>(v)) {} \
+    operator VariantType() const { return Variant; } \
+private: \
+    VariantType Variant; \
+};
+
+// Helper macro to select the correct macro based on the number of parameters
+#define GET_MACRO(_1,_2,_3,_4,_5,_6,_7,_8,_9,NAME,...) NAME
+#define DECLARE_SMART_ENUM(...) GET_MACRO(__VA_ARGS__, DECLARE_SMART_ENUM_FourParams, _, DECLARE_SMART_ENUM_ThreeParams, _, DECLARE_SMART_ENUM_TwoParams, _, DECLARE_SMART_ENUM_OneParam)(__VA_ARGS__)
+
+// Example usage:
+DECLARE_SMART_ENUM(MessageEvent,
+    EmptyMessage, { int x; },
+    TextMessage, { std::string data; },
+    NumberMessage, { int data; }
+)
 
 namespace SmartEnum
 {
@@ -59,16 +83,15 @@ namespace SmartEnum
 	template <typename... Ts> Overloaded(Ts...) -> Overloaded<Ts...>;
 #endif
 
-	template <typename... Handlers>
-	void Match(FWebMessage::Variant enumVariant, Handlers... handlers)
-	{
-		std::visit( Overloaded{std::forward<Handlers>(handlers)...}, enumVariant);
-	}
-
 	template <typename V, typename... Handlers>
-	void Match(V enumVariant, Handlers... handlers)
+	void Match(V&& enumVariant, Handlers... handlers)
 	{
-		using Variant = typename std::decay_t<V>::Variant;
-		std::visit( Overloaded{std::forward<Handlers>(handlers)...}, static_cast<Variant>(enumVariant));
+		using VariantType = typename std::decay_t<V>::VariantType;
+
+		auto unknownTypeHandler = [](auto&& arg) {
+			using T = std::decay_t<decltype(arg)>;
+			std::cout << "Unhandled type: " << typeid(T).name() << std::endl;
+		};
+		std::visit( Overloaded{unknownTypeHandler, std::forward<Handlers>(handlers)...}, static_cast<VariantType>(enumVariant));
 	}	
 }

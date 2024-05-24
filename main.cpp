@@ -5,6 +5,19 @@
 
 using namespace std;
 
+DECLARE_SMART_ENUM(FActorMessage,
+	Death, {},
+	Damage, {int amount;},
+	Stunned, {float duration;},
+	ReceiveMoney, {std::string sourceName; int amount;})
+
+
+DECLARE_SMART_ENUM(FWebMessage,
+	Success, {},
+	Failure, {std::string reason;},
+	Reroute, {std::string URL;},
+	Retry, {int attempts;})
+
 int main()
 {
 	vector<FActorMessage> Msgs = 
@@ -19,9 +32,7 @@ int main()
 		SmartEnum::Match(Msg,
 		[](FActorMessage::Death) { cout << "Death!" << endl; },
 		[](FActorMessage::Damage msg) { cout << "Damage: " << msg.amount << endl; },
-		[](FActorMessage::Stunned msg) { cout << "Stunned: " << msg.duration << endl; },
-		[](FActorMessage::ReceiveMoney msg) { cout << "ReceiveMoney: " << msg.sourceName << " " << msg.amount << endl; });
-
+		[](FActorMessage::Stunned msg) { cout << "Stunned: " << msg.duration << endl; });
 	
 	SmartEnum::Match(FWebMessage{FWebMessage::Reroute{"www.kagi.com"}},
 		[](FWebMessage::Success) { cout << "Success" << endl; },
