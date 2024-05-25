@@ -8,6 +8,8 @@
 
 #include <string>
 #include <variant>
+#include <iostream>
+#include <typeinfo>
 
 #if __cplusplus >= 202002L
 #define CPP20_OR_LATER
@@ -181,44 +183,46 @@ namespace SmartEnum
 	// Defines a struct that inherits from a list of types, and inherits all of their respective () operators
 	template <typename... Ts> struct Overloaded : Ts... { using Ts::operator()...; };
 
+#ifndef CPP20_OR_LATER
+
 	// this is a deduction guide, a new paradigm introduced in C++17
 	// it's giving helpful instructions to the compiler. this one is saying that 
 	// When the Overloaded struct is being constructed with a list of parameters (represented by Ts...)
 	// then the appropriate return type is Overloaded<Ts...>
 	// I've never seen this used outside of this paradigm, and I hear that it's unnecessary in C++20
-#ifndef CPP20_OR_LATER
 	template <typename... Ts> Overloaded(Ts...) -> Overloaded<Ts...>;
-#endif
 
 	// Trait to detect if a type has a nested type named VariantType
 	template <typename T, typename = void>
 	struct has_variant_type : std::false_type {};
 
+	// this uses SFINAE to return a constexpr member type called value underneath
+	// true_type or false_type which can be used in an if constexpr() block
 	template <typename T>
 	struct has_variant_type<T, std::void_t<typename T::VariantType>> : std::true_type {};
 
 	template <typename T>
 	constexpr bool has_variant_type_v = has_variant_type<T>::value;
 
+#else
+	// C++ 20 introduces concepts which negates the need for
+	// the SFINAE pattern used in C++17
+	template <typename T>
+	concept has_variant_type_v = requires { typename T::VariantType; };
+#endif
+
 	template <typename Event, typename... Handlers>
-	void Match(Event&& event, Handlers... handlers)
+	auto Match(Event&& event, Handlers... handlers) -> decltype(auto)
 	{
 		using EventType = std::decay_t<Event>;
-
-		auto unknownTypeHandler = [](auto&& arg) 
-		{
-			using T = std::decay_t<decltype(arg)>;
-			std::cout << "Unhandled type: " << typeid(T).name() << std::endl;
-		};
-
 		if constexpr (has_variant_type_v<EventType>) 
 		{
 			using VariantType = typename EventType::VariantType;
-			std::visit(Overloaded{unknownTypeHandler, std::forward<Handlers>(handlers)...}, static_cast<VariantType>(std::forward<Event>(event)));
+			return std::visit(Overloaded{std::forward<Handlers>(handlers)...}, static_cast<VariantType>(std::forward<Event>(event)));
 		} 
 		else 
 		{
-			std::visit(Overloaded{unknownTypeHandler, std::forward<Handlers>(handlers)...}, std::variant<EventType>(std::forward<Event>(event)));
+			return std::visit(Overloaded{std::forward<Handlers>(handlers)...}, std::variant<EventType>(std::forward<Event>(event)));
 		}
 	}	
 }

@@ -39,13 +39,15 @@ int main()
 		SmartEnum::Match(Msg,
 		[](FActorMessage::Death) { cout << "Death!" << endl; },
 		[](FActorMessage::Damage msg) { cout << "Damage: " << msg.amount << endl; },
-		[](FActorMessage::Stunned msg) { cout << "Stunned: " << msg.duration << endl; });
+		[](FActorMessage::Stunned msg) { cout << "Stunned: " << msg.duration << endl; },
+		[](auto&&) { cout << "unhandled type" << endl; });
 	
-	SmartEnum::Match(FWebMessage::Reroute{"www.kagi.com"},
-		[](FWebMessage::Success) { cout << "Success" << endl; },
-		[](FWebMessage::Failure msg) { cout << "Failure: " << msg.reason << endl; },
-		[](FWebMessage::Retry msg) {cout << "Retry count: " << msg.attempts << endl; },
-		[](FWebMessage::Reroute msg) { cout << "Reroute to: " << msg.URL << endl; });
+	int result = SmartEnum::Match(FWebMessage::Reroute{"www.kagi.com"},
+		[](FWebMessage::Success) { cout << "Success" << endl; return 1; },
+		[](FWebMessage::Failure msg) { cout << "Failure: " << msg.reason << endl; return 2; },
+		[](FWebMessage::Retry msg) {cout << "Retry count: " << msg.attempts << endl; return 3; },
+		[](FWebMessage::Reroute msg) { cout << "Reroute to: " << msg.URL << endl; return 4; },
+		[](auto&&) { cout << "unhandled type" << endl; });
 
-	std::cout << "Hello world" << std::endl;
+	std::cout << "Hello world: " << result << std::endl;
 }
