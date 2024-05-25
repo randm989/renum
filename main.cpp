@@ -1,3 +1,9 @@
+/*****
+ * Author: Josh Rutz
+ * Date: May 24, 2024
+ * Description: Smart Enum utility class
+*/
+
 #include <iostream>
 #include <vector>
 
@@ -16,7 +22,8 @@ DECLARE_SMART_ENUM(FWebMessage,
 	Success, {},
 	Failure, {std::string reason;},
 	Reroute, {std::string URL;},
-	Retry, {int attempts;})
+	Retry, {int attempts;},
+	Warning, {std::string text; FActorMessage::Damage code;})
 
 int main()
 {
@@ -34,7 +41,7 @@ int main()
 		[](FActorMessage::Damage msg) { cout << "Damage: " << msg.amount << endl; },
 		[](FActorMessage::Stunned msg) { cout << "Stunned: " << msg.duration << endl; });
 	
-	SmartEnum::Match(FWebMessage{FWebMessage::Reroute{"www.kagi.com"}},
+	SmartEnum::Match(FWebMessage::Reroute{"www.kagi.com"},
 		[](FWebMessage::Success) { cout << "Success" << endl; },
 		[](FWebMessage::Failure msg) { cout << "Failure: " << msg.reason << endl; },
 		[](FWebMessage::Retry msg) {cout << "Retry count: " << msg.attempts << endl; },

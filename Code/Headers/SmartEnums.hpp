@@ -1,3 +1,9 @@
+/*****
+ * Author: Josh Rutz
+ * Date: May 24, 2024
+ * Description: Smart Enum utility class
+*/
+
 #pragma once
 
 #include <string>
@@ -58,9 +64,110 @@ private: \
     VariantType Variant; \
 };
 
+// Macro for 5 parameters
+#define DECLARE_SMART_ENUM_FiveParams(EnumName, FirstOptionName, FirstOptionBody, SecondOptionName, SecondOptionBody, ThirdOptionName, ThirdOptionBody, FourthOptionName, FourthOptionBody, FifthOptionName, FifthOptionBody) \
+struct EnumName { \
+    struct FirstOptionName FirstOptionBody; \
+    struct SecondOptionName SecondOptionBody; \
+    struct ThirdOptionName ThirdOptionBody; \
+    struct FourthOptionName FourthOptionBody; \
+    struct FifthOptionName FifthOptionBody; \
+    using VariantType = std::variant<FirstOptionName, SecondOptionName, ThirdOptionName, FourthOptionName, FifthOptionName>; \
+    template <typename T, typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, EnumName>>> \
+	EnumName(T&& v) : Variant(std::forward<T>(v)) {} \
+    operator VariantType() const { return Variant; } \
+private: \
+    VariantType Variant; \
+};
+
+// Macro for 6 parameters
+#define DECLARE_SMART_ENUM_SixParams(EnumName, FirstOptionName, FirstOptionBody, SecondOptionName, SecondOptionBody, ThirdOptionName, ThirdOptionBody, FourthOptionName, FourthOptionBody, FifthOptionName, FifthOptionBody, SixthOptionName, SixthOptionBody) \
+struct EnumName { \
+    struct FirstOptionName FirstOptionBody; \
+    struct SecondOptionName SecondOptionBody; \
+    struct ThirdOptionName ThirdOptionBody; \
+    struct FourthOptionName FourthOptionBody; \
+    struct FifthOptionName FifthOptionBody; \
+    struct SixthOptionName SixthOptionBody; \
+    using VariantType = std::variant<FirstOptionName, SecondOptionName, ThirdOptionName, FourthOptionName, FifthOptionName, SixthOptionName>; \
+    template <typename T, typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, EnumName>>> \
+	EnumName(T&& v) : Variant(std::forward<T>(v)) {} \
+    operator VariantType() const { return Variant; } \
+private: \
+    VariantType Variant; \
+};
+
+// Macro for 7 parameters
+#define DECLARE_SMART_ENUM_SevenParams(EnumName, FirstOptionName, FirstOptionBody, SecondOptionName, SecondOptionBody, ThirdOptionName, ThirdOptionBody, FourthOptionName, FourthOptionBody, FifthOptionName, FifthOptionBody, SixthOptionName, SixthOptionBody, SeventhOptionName, SeventhOptionBody) \
+struct EnumName { \
+    struct FirstOptionName FirstOptionBody; \
+    struct SecondOptionName SecondOptionBody; \
+    struct ThirdOptionName ThirdOptionBody; \
+    struct FourthOptionName FourthOptionBody; \
+    struct FifthOptionName FifthOptionBody; \
+    struct SixthOptionName SixthOptionBody; \
+    struct SeventhOptionName SeventhOptionBody; \
+    using VariantType = std::variant<FirstOptionName, SecondOptionName, ThirdOptionName, FourthOptionName, FifthOptionName, SixthOptionName, SeventhOptionName>; \
+    template <typename T, typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, EnumName>>> \
+	EnumName(T&& v) : Variant(std::forward<T>(v)) {} \
+    operator VariantType() const { return Variant; } \
+private: \
+    VariantType Variant; \
+};
+
+// Macro for 8 parameters
+#define DECLARE_SMART_ENUM_EightParams(EnumName, FirstOptionName, FirstOptionBody, SecondOptionName, SecondOptionBody, ThirdOptionName, ThirdOptionBody, FourthOptionName, FourthOptionBody, FifthOptionName, FifthOptionBody, SixthOptionName, SixthOptionBody, SeventhOptionName, SeventhOptionBody, EighthOptionName, EighthOptionBody) \
+struct EnumName { \
+    struct FirstOptionName FirstOptionBody; \
+    struct SecondOptionName SecondOptionBody; \
+    struct ThirdOptionName ThirdOptionBody; \
+    struct FourthOptionName FourthOptionBody; \
+    struct FifthOptionName FifthOptionBody; \
+    struct SixthOptionName SixthOptionBody; \
+    struct SeventhOptionName SeventhOptionBody; \
+    struct EighthOptionName EighthOptionBody; \
+    using VariantType = std::variant<FirstOptionName, SecondOptionName, ThirdOptionName, FourthOptionName, FifthOptionName, SixthOptionName, SeventhOptionName, EighthOptionName>; \
+    template <typename T, typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, EnumName>>> \
+	EnumName(T&& v) : Variant(std::forward<T>(v)) {} \
+    operator VariantType() const { return Variant; } \
+private: \
+    VariantType Variant; \
+};
+
+// Macro for 9 parameters
+#define DECLARE_SMART_ENUM_NineParams(EnumName, FirstOptionName, FirstOptionBody, SecondOptionName, SecondOptionBody, ThirdOptionName, ThirdOptionBody, FourthOptionName, FourthOptionBody, FifthOptionName, FifthOptionBody, SixthOptionName, SixthOptionBody, SeventhOptionName, SeventhOptionBody, EighthOptionName, EighthOptionBody, NinthOptionName, NinthOptionBody) \
+struct EnumName { \
+    struct FirstOptionName FirstOptionBody; \
+    struct SecondOptionName SecondOptionBody; \
+    struct ThirdOptionName ThirdOptionBody; \
+    struct FourthOptionName FourthOptionBody; \
+    struct FifthOptionName FifthOptionBody; \
+    struct SixthOptionName SixthOptionBody; \
+    struct SeventhOptionName SeventhOptionBody; \
+    struct EighthOptionName EighthOptionBody; \
+    struct NinthOptionName NinthOptionBody; \
+    using VariantType = std::variant<FirstOptionName, SecondOptionName, ThirdOptionName, FourthOptionName, FifthOptionName, SixthOptionName, SeventhOptionName, EighthOptionName, NinthOptionName>; \
+    template <typename T, typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, EnumName>>> \
+	EnumName(T&& v) : Variant(std::forward<T>(v)) {} \
+    operator VariantType() const { return Variant; } \
+private: \
+    VariantType Variant; \
+};
+
+
 // Helper macro to select the correct macro based on the number of parameters
-#define GET_MACRO(_1,_2,_3,_4,_5,_6,_7,_8,_9,NAME,...) NAME
-#define DECLARE_SMART_ENUM(...) GET_MACRO(__VA_ARGS__, DECLARE_SMART_ENUM_FourParams, _, DECLARE_SMART_ENUM_ThreeParams, _, DECLARE_SMART_ENUM_TwoParams, _, DECLARE_SMART_ENUM_OneParam)(__VA_ARGS__)
+// The number of arguments in get macro should be equal to the number of params we can handle multiplied by 2, and add 1 more for the smart enum event name
+#define GET_MACRO(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,_17,_18,_19,NAME,...) NAME
+#define DECLARE_SMART_ENUM(...) GET_MACRO(__VA_ARGS__, \
+			DECLARE_SMART_ENUM_NineParams, _, \
+			DECLARE_SMART_ENUM_EightParams, _, \
+			DECLARE_SMART_ENUM_SevenParams, _, \
+			DECLARE_SMART_ENUM_SixParams, _, \
+			DECLARE_SMART_ENUM_FiveParams, _, \
+			DECLARE_SMART_ENUM_FourParams, _, \
+			DECLARE_SMART_ENUM_ThreeParams, _, \
+			DECLARE_SMART_ENUM_TwoParams, _, \
+			DECLARE_SMART_ENUM_OneParam)(__VA_ARGS__)
 
 // Example usage:
 DECLARE_SMART_ENUM(MessageEvent,
@@ -83,15 +190,35 @@ namespace SmartEnum
 	template <typename... Ts> Overloaded(Ts...) -> Overloaded<Ts...>;
 #endif
 
-	template <typename V, typename... Handlers>
-	void Match(V&& enumVariant, Handlers... handlers)
-	{
-		using VariantType = typename std::decay_t<V>::VariantType;
+	// Trait to detect if a type has a nested type named VariantType
+	template <typename T, typename = void>
+	struct has_variant_type : std::false_type {};
 
-		auto unknownTypeHandler = [](auto&& arg) {
+	template <typename T>
+	struct has_variant_type<T, std::void_t<typename T::VariantType>> : std::true_type {};
+
+	template <typename T>
+	constexpr bool has_variant_type_v = has_variant_type<T>::value;
+
+	template <typename Event, typename... Handlers>
+	void Match(Event&& event, Handlers... handlers)
+	{
+		using EventType = std::decay_t<Event>;
+
+		auto unknownTypeHandler = [](auto&& arg) 
+		{
 			using T = std::decay_t<decltype(arg)>;
 			std::cout << "Unhandled type: " << typeid(T).name() << std::endl;
 		};
-		std::visit( Overloaded{unknownTypeHandler, std::forward<Handlers>(handlers)...}, static_cast<VariantType>(enumVariant));
+
+		if constexpr (has_variant_type_v<EventType>) 
+		{
+			using VariantType = typename EventType::VariantType;
+			std::visit(Overloaded{unknownTypeHandler, std::forward<Handlers>(handlers)...}, static_cast<VariantType>(std::forward<Event>(event)));
+		} 
+		else 
+		{
+			std::visit(Overloaded{unknownTypeHandler, std::forward<Handlers>(handlers)...}, std::variant<EventType>(std::forward<Event>(event)));
+		}
 	}	
 }
